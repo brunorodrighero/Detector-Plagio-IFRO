@@ -113,8 +113,14 @@ public class PlagiarismDetector extends JFrame {
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        // Default to the user's Desktop directory
-        String defaultReportPath = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + REPORT_FILE_NAME;
+        // Default to the user's Desktop directory in a platform-independent way
+        String desktopPath = System.getProperty("user.home");
+        File desktopDir = new File(desktopPath, "Desktop");
+        if (!desktopDir.exists()) {
+            // Fallback para o diretório home se o Desktop não for encontrado
+            desktopDir = new File(desktopPath);
+        }
+        String defaultReportPath = new File(desktopDir, REPORT_FILE_NAME).getAbsolutePath();
         reportPathField = new JTextField(defaultReportPath, 20);
         controlPanel.add(reportPathField, gbc);
 
@@ -162,19 +168,17 @@ public class PlagiarismDetector extends JFrame {
         setVisible(true);
 
         // Set the custom icon for the JFrame window
+        // Set the custom icon for the JFrame window
         try {
-            // Use ClassLoader.getSystemResource to load the icon
-            java.net.URL iconURL = ClassLoader.getSystemResource("app-icon.png");
+            // Carregar o ícone usando getResource() da classe atual
+            java.net.URL iconURL = PlagiarismDetector.class.getResource("/app-icon.png");
             if (iconURL == null) {
-                throw new IOException("Recurso 'app-icon.png' não encontrado no classpath. Verifique se o arquivo está em src/main/resources e foi incluído no JAR.");
+                System.err.println("Recurso 'app-icon.png' não encontrado no classpath. Verifique se o arquivo está em src/main/resources.");
+            } else {
+                ImageIcon icon = new ImageIcon(iconURL);
+                setIconImage(icon.getImage());
+                System.out.println("Ícone carregado com sucesso: " + iconURL);
             }
-            System.out.println("Icon URL: " + iconURL); // Debug log to see the URL
-            ImageIcon icon = new ImageIcon(iconURL);
-            if (icon.getImageLoadStatus() != java.awt.MediaTracker.COMPLETE) {
-                throw new IOException("Falha ao carregar a imagem. Status: " + icon.getImageLoadStatus());
-            }
-            setIconImage(icon.getImage());
-            System.out.println("Ícone carregado com sucesso.");
         } catch (Exception e) {
             System.err.println("Erro ao carregar o ícone: " + e.getMessage());
             e.printStackTrace();
